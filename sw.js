@@ -1,4 +1,4 @@
-const CACHE = 'pink-snake-v6';
+const CACHE = 'pink-snake-v7';
 const ASSETS = ['./', './index.html', './manifest.json', './icons/icon-192.png', './icons/icon-512.png'];
 
 self.addEventListener('install', e => {
