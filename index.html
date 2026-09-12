@@ -190,13 +190,23 @@
   readColors();
 
   // --- audio (generated, no files)
-  let ac = null;
-  function audio() {
-    if (settings.muted) return null;
+  // iOS only allows sound after a real user gesture: create + resume the context on the first tap/key.
+  let ac = null, unlocked = false;
+  function getCtx() {
     if (!ac) { try { ac = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { return null; } }
     if (ac.state === 'suspended') ac.resume();
     return ac;
   }
+  function unlock() {
+    const a = getCtx(); if (!a) return;
+    try {
+      const b = a.createBuffer(1, 1, 22050), src = a.createBufferSource();
+      src.buffer = b; src.connect(a.destination); src.start(0);
+    } catch (e) {}
+    if (a.state === 'running') { unlocked = true; ['pointerdown', 'touchend', 'keydown'].forEach(ev => document.removeEventListener(ev, unlock, true)); }
+  }
+  ['pointerdown', 'touchend', 'keydown'].forEach(ev => document.addEventListener(ev, unlock, true));
+  function audio() { return settings.muted ? null : getCtx(); }
   function tone(f0, f1, dur, type, vol, when) {
     const a = audio(); if (!a) return;
     const t = a.currentTime + (when || 0);
@@ -204,16 +214,16 @@
     o.type = type || 'square';
     o.frequency.setValueAtTime(f0, t);
     o.frequency.exponentialRampToValueAtTime(f1, t + dur);
-    g.gain.setValueAtTime(vol || .07, t);
+    g.gain.setValueAtTime(vol || .18, t);
     g.gain.exponentialRampToValueAtTime(.0001, t + dur);
     o.connect(g).connect(a.destination);
     o.start(t); o.stop(t + dur + .03);
   }
   const sfx = {
-    start() { tone(440, 660, .09); tone(660, 990, .12, 'square', .07, .1); },
-    eat()   { tone(880, 1320, .08, 'square', .06); },
-    die()   { tone(320, 60, .45, 'sawtooth', .08); },
-    tick()  { tone(1200, 1200, .03, 'square', .03); },
+    start() { tone(440, 660, .12); tone(660, 990, .16, 'square', .18, .12); },
+    eat()   { tone(880, 1400, .12, 'square', .16); },
+    die()   { tone(320, 60, .5, 'sawtooth', .2); },
+    tick()  { tone(1200, 1200, .05, 'square', .08); },
   };
   function vib(p) { try { if (navigator.vibrate) navigator.vibrate(p); } catch (e) {} }
 
@@ -428,7 +438,8 @@
   });
   soundBtn.addEventListener('click', () => {
     settings.muted = !settings.muted; save('pinkSnakeSettings', settings); renderSettings();
-    if (!settings.muted) sfx.tick();
+    if (!settings.muted) { unlock(); sfx.start(); }
+    showToast(settings.muted ? 'Sound off' : 'Sound on');
   });
   renderSettings();
 
