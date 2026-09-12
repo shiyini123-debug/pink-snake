@@ -52,7 +52,7 @@
   <h2>3. A 路流程与工具</h2>
   <div class="tablewrap"><table>
     <tr><th>#</th><th>步骤</th><th>工具</th><th>费用</th></tr>
-    <tr><td>1</td><td>游戏本体：<code>index.html</code>，Canvas 2D 画 20×20 网格，粉色配色，手指滑动 + 屏幕方向键，本地保存最高分 <span class="en">localStorage</span></td><td>Claude Code</td><td>已有订阅</td></tr>
+    <tr><td>1</td><td>游戏本体：<code>index.html</code>，Canvas 2D 画 20×20 网格，粉色配色，全屏滑动 + 屏幕方向键 + 键盘，输入队列 <span class="en">input buffer</span>，平滑滑行 <span class="en">interpolation</span>，Web Audio 生成音效，难度 Slow / Normal / Fast，穿墙模式，最近 5 次成绩与分享按钮，深色模式，本地保存 <span class="en">localStorage</span></td><td>Claude Code</td><td>已有订阅</td></tr>
     <tr><td>2</td><td>PWA 配置：<code>manifest.json</code> <span class="en">应用清单：名字、图标、全屏模式</span> + <code>sw.js</code> <span class="en">Service Worker：离线缓存</span></td><td>Claude Code</td><td>0</td></tr>
     <tr><td>3</td><td>图标：192 px 与 512 px PNG，由 Python Pillow 按游戏画面生成</td><td>Python + Pillow</td><td>0</td></tr>
     <tr><td>4</td><td>发布：新建公开仓库 <code>pink-snake</code>，开启 GitHub Pages</td><td>git + GitHub CLI (gh)</td><td>0</td></tr>
@@ -104,7 +104,7 @@
 
   <h2>8. 不做的事</h2>
   <div class="card">
-    <p>本轮不做：音效、关卡、多人、皮肤切换、应用商店素材。以上都属于 B 路或后续迭代。</p>
+    <p>不做：关卡、多人、账号、在线排行榜、皮肤切换、应用商店素材。多人和排行榜需要后端和费用，违背 A 路零成本的初衷；其余属于 B 路或后续迭代。</p><p>第二轮优化（2026-09-12）已完成：手感（输入队列、全屏滑动、震动反馈）、视觉（平滑滑行、吃食物 / 死亡动画、食物脉动、深色模式）、音效（Web Audio 生成，静音开关）、玩法（难度、穿墙、最近成绩、分享）。</p>
   </div>
 
   <footer>Pink Snake · 规划书 · 由 Claude Code 生成 · 源文件与游戏同在 <code>22 pink-snake</code> 文件夹</footer>

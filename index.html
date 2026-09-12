@@ -4,7 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>Pink Snake</title>
-<meta name="theme-color" content="#FF69B4">
+<meta name="theme-color" content="#FF69B4" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#1F0B16" media="(prefers-color-scheme: dark)">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -15,64 +16,112 @@
 <style>
   :root {
     --bg: #FFF0F5;
+    --board: #FFFFFF;
     --grid: #FFD6E7;
     --snake: #FF69B4;
     --head: #FF1493;
     --food: #FF85A1;
+    --food-glow: rgba(255,133,161,.35);
     --text: #8B004B;
     --btn: #FFB6D9;
     --btn-active: #FF8FC5;
+    --chip: #FFE4EF;
+    --overlay: rgba(255,240,245,.9);
+    --shadow: rgba(255,105,180,.25);
+    --flash: rgba(255,255,255,.7);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1F0B16;
+      --board: #2C1020;
+      --grid: #45182F;
+      --snake: #FF69B4;
+      --head: #FF3DA6;
+      --food: #FFB3C6;
+      --food-glow: rgba(255,179,198,.3);
+      --text: #FFD6E7;
+      --btn: #5A2140;
+      --btn-active: #7A2B57;
+      --chip: #3B1529;
+      --overlay: rgba(31,11,22,.88);
+      --shadow: rgba(0,0,0,.45);
+      --flash: rgba(255,182,217,.6);
+    }
   }
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   html, body {
     margin: 0; height: 100%;
     background: var(--bg); color: var(--text);
-    font-family: -apple-system, "PingFang SC", "Segoe UI", "Microsoft YaHei", Roboto, sans-serif;
+    font-family: -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
     overscroll-behavior: none; touch-action: manipulation;
     user-select: none; -webkit-user-select: none;
   }
   body {
     display: flex; flex-direction: column; align-items: center; justify-content: space-between;
-    padding: max(12px, env(safe-area-inset-top)) 12px max(12px, env(safe-area-inset-bottom));
+    padding: max(10px, env(safe-area-inset-top)) 12px max(10px, env(safe-area-inset-bottom));
   }
+  button { font-family: inherit; color: var(--text); cursor: pointer; }
   header {
     width: 100%; max-width: 480px;
-    display: flex; justify-content: space-between; align-items: baseline;
-    font-weight: 600; font-size: 18px;
+    display: flex; justify-content: space-between; align-items: center; gap: 10px;
+    font-weight: 600; font-size: 17px;
   }
-  header .title { font-size: 22px; letter-spacing: 1px; }
-  header .scores span { margin-left: 14px; }
-  .stage { position: relative; width: min(100vw - 24px, 60vh, 480px); aspect-ratio: 1 / 1; }
+  header .title { font-size: 21px; letter-spacing: 1px; }
+  header .scores { flex: 1; text-align: right; }
+  header .scores span { margin-left: 12px; }
+  header .scores b { display: inline-block; }
+  header .scores b.bump { animation: bump .28s ease-out; }
+  @keyframes bump { 0% { transform: scale(1); } 40% { transform: scale(1.45); color: var(--head); } 100% { transform: scale(1); } }
+  .icon { border: 0; background: var(--chip); border-radius: 10px; width: 38px; height: 34px; font-size: 18px; }
+  .stage { position: relative; width: min(100vw - 24px, 52vh, 480px); aspect-ratio: 1 / 1; }
   canvas {
     display: block; width: 100%; height: 100%;
-    background: #fff; border-radius: 16px;
-    box-shadow: 0 8px 24px rgba(255,105,180,.25);
+    background: var(--board); border-radius: 16px;
+    box-shadow: 0 8px 24px var(--shadow);
     touch-action: none;
   }
   .overlay {
     position: absolute; inset: 0; border-radius: 16px;
     display: flex; flex-direction: column; align-items: center; justify-content: center;
-    background: rgba(255,240,245,.88); text-align: center; padding: 20px;
+    background: var(--overlay); text-align: center; padding: 20px;
   }
   .overlay[hidden] { display: none; }
-  .overlay h1 { margin: 0 0 8px; font-size: 32px; color: var(--head); }
-  .overlay p { margin: 4px 0; font-size: 16px; }
-  .overlay .hint { opacity: .7; font-size: 14px; margin-top: 12px; }
+  .overlay h1 { margin: 0 0 6px; font-size: 32px; font-size: clamp(20px, 9cqw, 32px); color: var(--head); }
+  .overlay p { margin: 4px 0; font-size: 16px; font-size: clamp(12px, 4.5cqw, 16px); }
+  .overlay .recent { font-size: 13px; font-size: clamp(10px, 3.6cqw, 13px); opacity: .75; min-height: 1.2em; }
+  .overlay .hint { opacity: .7; font-size: 13px; font-size: clamp(10px, 3.6cqw, 13px); margin-top: 10px; }
+  .stage { container-type: inline-size; }
+  .chip {
+    border: 0; border-radius: 999px; background: var(--chip); padding: 7px 14px; font-size: 14px; font-weight: 600;
+  }
+  .chip.primary { background: var(--head); color: #fff; margin-top: 8px; }
+  .chip[hidden] { display: none; }
+  .settings { display: flex; gap: 10px; align-items: center; margin-top: 10px; flex-wrap: wrap; justify-content: center; }
+  .seg { display: inline-flex; background: var(--chip); border-radius: 999px; padding: 3px; }
+  .seg button { border: 0; background: transparent; border-radius: 999px; padding: 5px 12px; font-size: 13.5px; font-weight: 600; }
+  .seg button.on { background: var(--head); color: #fff; }
   .pad {
-    display: grid; grid-template-columns: repeat(3, 64px); grid-template-rows: repeat(3, 64px);
-    gap: 8px; margin-top: 10px;
+    display: grid; grid-template-columns: repeat(3, 62px); grid-template-rows: repeat(3, 62px);
+    gap: 8px; margin-top: 8px;
   }
   .pad button {
-    border: 0; border-radius: 16px; background: var(--btn); color: var(--text);
-    font-size: 26px; font-weight: 700; cursor: pointer;
-    box-shadow: 0 3px 0 rgba(139,0,75,.15);
+    border: 0; border-radius: 16px; background: var(--btn);
+    font-size: 26px; font-weight: 700;
+    box-shadow: 0 3px 0 rgba(0,0,0,.12);
   }
   .pad button:active { background: var(--btn-active); transform: translateY(2px); box-shadow: none; }
   .pad .mid { background: transparent; box-shadow: none; font-size: 14px; }
   .pad .mid:active { transform: none; }
-  footer { font-size: 12px; opacity: .6; margin-top: 6px; }
-  @media (max-height: 640px) {
-    .pad { grid-template-columns: repeat(3, 52px); grid-template-rows: repeat(3, 52px); }
+  #toast {
+    position: fixed; left: 50%; bottom: max(16px, env(safe-area-inset-bottom));
+    transform: translateX(-50%); max-width: 90vw;
+    background: var(--head); color: #fff; padding: 10px 16px; border-radius: 999px;
+    font-size: 14px; font-weight: 600; box-shadow: 0 6px 18px rgba(0,0,0,.25); cursor: pointer;
+  }
+  #toast[hidden] { display: none; }
+  @media (max-height: 660px) {
+    .pad { grid-template-columns: repeat(3, 50px); grid-template-rows: repeat(3, 50px); gap: 6px; }
+    .stage { width: min(100vw - 24px, 46vh, 480px); }
   }
 </style>
 </head>
@@ -80,6 +129,7 @@
 <header>
   <div class="title">🐍 Pink Snake</div>
   <div class="scores">Score <b id="score">0</b><span>Best <b id="best">0</b></span></div>
+  <button class="icon" id="soundBtn" aria-label="Toggle sound">🔊</button>
 </header>
 
 <div class="stage">
@@ -87,8 +137,17 @@
   <div class="overlay" id="overlay">
     <h1 id="ovTitle">Pink Snake</h1>
     <p id="ovLine">Tap to start</p>
-    <p class="hint">Swipe or use the arrow pad below</p>
+    <p class="recent" id="ovRecent"></p>
+    <button class="chip primary" id="shareBtn" hidden>Share score</button>
+    <p class="hint">Swipe anywhere or use the arrow pad</p>
   </div>
+</div>
+
+<div class="settings">
+  <div class="seg" id="diffSeg" role="group" aria-label="Speed">
+    <button data-diff="slow">Slow</button><button data-diff="normal">Normal</button><button data-diff="fast">Fast</button>
+  </div>
+  <button class="chip" id="wallBtn">Walls on</button>
 </div>
 
 <div class="pad">
@@ -96,33 +155,73 @@
   <button data-dir="left" aria-label="Left">◀</button><button class="mid" id="pauseBtn">Pause</button><button data-dir="right" aria-label="Right">▶</button>
   <span></span><button data-dir="down" aria-label="Down">▼</button><span></span>
 </div>
-<footer>swipe / arrow keys / WASD</footer>
+<div id="toast" hidden></div>
 
 <script>
 (function () {
   const N = 20;
-  const START_TICK = 150, TICK_STEP = 3, MIN_TICK = 70;
-  const canvas = document.getElementById('game');
-  const ctx = canvas.getContext('2d');
-  const overlay = document.getElementById('overlay');
-  const ovTitle = document.getElementById('ovTitle');
-  const ovLine = document.getElementById('ovLine');
-  const scoreEl = document.getElementById('score');
-  const bestEl = document.getElementById('best');
-  const pauseBtn = document.getElementById('pauseBtn');
+  const DIFF = { slow: {start: 200, min: 100}, normal: {start: 150, min: 70}, fast: {start: 110, min: 50} };
+  const TICK_STEP = 3, DEATH_MS = 480, EAT_MS = 260;
+  const VEC = {up: {x: 0, y: -1}, down: {x: 0, y: 1}, left: {x: -1, y: 0}, right: {x: 1, y: 0}};
 
-  const css = getComputedStyle(document.documentElement);
-  const C = {
-    grid: css.getPropertyValue('--grid').trim(),
-    snake: css.getPropertyValue('--snake').trim(),
-    head: css.getPropertyValue('--head').trim(),
-    food: css.getPropertyValue('--food').trim(),
+  const $ = id => document.getElementById(id);
+  const canvas = $('game'), ctx = canvas.getContext('2d');
+  const overlay = $('overlay'), ovTitle = $('ovTitle'), ovLine = $('ovLine'), ovRecent = $('ovRecent');
+  const scoreEl = $('score'), bestEl = $('best'), pauseBtn = $('pauseBtn'), toast = $('toast');
+  const soundBtn = $('soundBtn'), wallBtn = $('wallBtn'), shareBtn = $('shareBtn'), diffSeg = $('diffSeg');
+
+  // --- storage helpers
+  function load(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } }
+  function save(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
+
+  const settings = Object.assign({diff: 'normal', wrap: false, muted: false}, load('pinkSnakeSettings', {}));
+  if (!DIFF[settings.diff]) settings.diff = 'normal';
+  let best = parseInt(load('pinkSnakeBest', 0), 10) || 0;
+  let recent = load('pinkSnakeRecent', []);
+  if (!Array.isArray(recent)) recent = [];
+
+  // --- colours (re-read on scheme change)
+  let C = {};
+  function readColors() {
+    const css = getComputedStyle(document.documentElement);
+    const g = k => css.getPropertyValue(k).trim();
+    C = { grid: g('--grid'), snake: g('--snake'), head: g('--head'), food: g('--food'), glow: g('--food-glow'), flash: g('--flash') };
+  }
+  readColors();
+
+  // --- audio (generated, no files)
+  let ac = null;
+  function audio() {
+    if (settings.muted) return null;
+    if (!ac) { try { ac = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { return null; } }
+    if (ac.state === 'suspended') ac.resume();
+    return ac;
+  }
+  function tone(f0, f1, dur, type, vol, when) {
+    const a = audio(); if (!a) return;
+    const t = a.currentTime + (when || 0);
+    const o = a.createOscillator(), g = a.createGain();
+    o.type = type || 'square';
+    o.frequency.setValueAtTime(f0, t);
+    o.frequency.exponentialRampToValueAtTime(f1, t + dur);
+    g.gain.setValueAtTime(vol || .07, t);
+    g.gain.exponentialRampToValueAtTime(.0001, t + dur);
+    o.connect(g).connect(a.destination);
+    o.start(t); o.stop(t + dur + .03);
+  }
+  const sfx = {
+    start() { tone(440, 660, .09); tone(660, 990, .12, 'square', .07, .1); },
+    eat()   { tone(880, 1320, .08, 'square', .06); },
+    die()   { tone(320, 60, .45, 'sawtooth', .08); },
+    tick()  { tone(1200, 1200, .03, 'square', .03); },
   };
+  function vib(p) { try { if (navigator.vibrate) navigator.vibrate(p); } catch (e) {} }
 
+  // --- game state
   let state = 'ready'; // ready | running | paused | over
-  let snake, dir, nextDir, food, score, best = 0, tick, acc = 0, last = 0, cell = 0;
+  let snake, prev = null, dir, queue = [], food, score, tick, minTick, acc = 0, last = 0, cell = 0;
+  let raf = 0, eat = 0, deathStart = 0, flash = 0;
 
-  try { best = parseInt(localStorage.getItem('pinkSnakeBest') || '0', 10) || 0; } catch (e) {}
   bestEl.textContent = best;
 
   function resize() {
@@ -132,14 +231,16 @@
     canvas.height = Math.round(size * dpr);
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     cell = size / N;
-    draw();
+    draw(1, performance.now());
   }
 
   function reset() {
     const mid = Math.floor(N / 2);
     snake = [{x: mid, y: mid}, {x: mid - 1, y: mid}, {x: mid - 2, y: mid}];
-    dir = {x: 1, y: 0}; nextDir = dir;
-    score = 0; tick = START_TICK; acc = 0;
+    prev = null; queue = [];
+    dir = VEC.right;
+    score = 0; acc = 0; eat = 0; flash = 0; deathStart = 0;
+    tick = DIFF[settings.diff].start; minTick = DIFF[settings.diff].min;
     scoreEl.textContent = 0;
     placeFood();
   }
@@ -151,35 +252,43 @@
     food = free[Math.floor(Math.random() * free.length)];
   }
 
+  // input queue: up to two buffered turns so quick double-turns are not lost
   function setDir(d) {
-    const v = {up: {x: 0, y: -1}, down: {x: 0, y: 1}, left: {x: -1, y: 0}, right: {x: 1, y: 0}}[d];
-    if (!v) return;
-    if (state === 'ready' || state === 'over') { start(); }
-    if (state === 'paused') { resume(); }
-    if (v.x === -dir.x && v.y === -dir.y && snake.length > 1) return; // no reversal
-    nextDir = v;
+    const v = VEC[d]; if (!v) return;
+    if (state === 'ready' || state === 'over') start();
+    if (state === 'paused') resume();
+    const ref = queue.length ? queue[queue.length - 1] : dir;
+    if (v.x === ref.x && v.y === ref.y) return;      // same direction
+    if (v.x === -ref.x && v.y === -ref.y) return;    // reversal
+    if (queue.length < 2) queue.push(v);
   }
 
   function step() {
-    dir = nextDir;
+    if (queue.length) dir = queue.shift();
     const head = {x: snake[0].x + dir.x, y: snake[0].y + dir.y};
-    if (head.x < 0 || head.y < 0 || head.x >= N || head.y >= N ||
-        snake.some((s, i) => i < snake.length - 1 && s.x === head.x && s.y === head.y)) {
+    if (settings.wrap) {
+      head.x = (head.x + N) % N; head.y = (head.y + N) % N;
+    } else if (head.x < 0 || head.y < 0 || head.x >= N || head.y >= N) {
       return gameOver();
     }
+    if (snake.some((s, i) => i < snake.length - 1 && s.x === head.x && s.y === head.y)) return gameOver();
+    prev = snake.slice();
     snake.unshift(head);
     if (head.x === food.x && head.y === food.y) {
       score++; scoreEl.textContent = score;
-      tick = Math.max(MIN_TICK, tick - TICK_STEP);
-      if (score > best) { best = score; bestEl.textContent = best;
-        try { localStorage.setItem('pinkSnakeBest', String(best)); } catch (e) {} }
+      scoreEl.classList.remove('bump'); void scoreEl.offsetWidth; scoreEl.classList.add('bump');
+      eat = 1; sfx.eat(); vib(15);
+      tick = Math.max(minTick, tick - TICK_STEP);
+      if (score > best) { best = score; bestEl.textContent = best; save('pinkSnakeBest', best); }
       placeFood();
     } else {
       snake.pop();
     }
   }
 
-  function draw() {
+  const lerp = (a, b, t) => a + (b - a) * t;
+
+  function draw(t, now) {
     const size = cell * N;
     ctx.clearRect(0, 0, size, size);
     ctx.strokeStyle = C.grid; ctx.lineWidth = 1;
@@ -190,79 +299,146 @@
     }
     ctx.stroke();
     if (!snake) return;
-    // food
+
+    // food: glow + pulse
+    const fx = (food.x + .5) * cell, fy = (food.y + .5) * cell;
+    const pulse = 1 + .08 * Math.sin(now / 180);
+    ctx.fillStyle = C.glow;
+    ctx.beginPath(); ctx.arc(fx, fy, cell * .55 * pulse, 0, Math.PI * 2); ctx.fill();
     ctx.fillStyle = C.food;
-    ctx.beginPath();
-    ctx.arc((food.x + .5) * cell, (food.y + .5) * cell, cell * .36, 0, Math.PI * 2);
-    ctx.fill();
-    // snake
-    const r = cell * .28, pad = cell * .08;
-    for (let i = snake.length - 1; i >= 0; i--) {
-      const s = snake[i];
-      ctx.fillStyle = i === 0 ? C.head : C.snake;
-      roundRect(s.x * cell + pad, s.y * cell + pad, cell - 2 * pad, cell - 2 * pad, r);
+    ctx.beginPath(); ctx.arc(fx, fy, cell * .34 * pulse, 0, Math.PI * 2); ctx.fill();
+
+    // interpolated centres; a wrapped jump is snapped, not swept across the board
+    const pts = snake.map((s, i) => {
+      let p = (prev && prev[i]) || s;
+      if (Math.abs(p.x - s.x) > 1 || Math.abs(p.y - s.y) > 1) p = s;
+      return {x: (lerp(p.x, s.x, t) + .5) * cell, y: (lerp(p.y, s.y, t) + .5) * cell};
+    });
+
+    // body as a smooth tube, broken where the snake wraps
+    ctx.strokeStyle = C.snake; ctx.lineWidth = cell * .72;
+    ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+    ctx.beginPath(); ctx.moveTo(pts[0].x, pts[0].y);
+    for (let i = 1; i < pts.length; i++) {
+      const a = pts[i - 1], b = pts[i];
+      if (Math.abs(a.x - b.x) > cell * 1.5 || Math.abs(a.y - b.y) > cell * 1.5) { ctx.stroke(); ctx.beginPath(); ctx.moveTo(b.x, b.y); }
+      else ctx.lineTo(b.x, b.y);
     }
-    // eyes
-    const h = snake[0];
+    ctx.stroke();
+
+    // head + eyes
+    const h = pts[0];
+    ctx.fillStyle = C.head;
+    ctx.beginPath(); ctx.arc(h.x, h.y, cell * .44 * (1 + .25 * eat), 0, Math.PI * 2); ctx.fill();
     ctx.fillStyle = '#fff';
-    const ex = (h.x + .5) * cell + dir.x * cell * .15, ey = (h.y + .5) * cell + dir.y * cell * .15;
-    const off = cell * .18;
-    const ox = dir.x === 0 ? off : 0, oy = dir.y === 0 ? off : 0;
-    ctx.beginPath(); ctx.arc(ex - ox, ey - oy, cell * .08, 0, Math.PI * 2); ctx.fill();
-    ctx.beginPath(); ctx.arc(ex + ox, ey + oy, cell * .08, 0, Math.PI * 2); ctx.fill();
+    const ex = h.x + dir.x * cell * .16, ey = h.y + dir.y * cell * .16;
+    const off = cell * .18, ox = dir.x === 0 ? off : 0, oy = dir.y === 0 ? off : 0;
+    ctx.beginPath(); ctx.arc(ex - ox, ey - oy, cell * .085, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(ex + ox, ey + oy, cell * .085, 0, Math.PI * 2); ctx.fill();
+
+    if (flash > 0) { ctx.globalAlpha = flash; ctx.fillStyle = C.flash; ctx.fillRect(0, 0, size, size); ctx.globalAlpha = 1; }
   }
 
-  function roundRect(x, y, w, h, r) {
-    ctx.beginPath();
-    ctx.moveTo(x + r, y);
-    ctx.arcTo(x + w, y, x + w, y + h, r);
-    ctx.arcTo(x + w, y + h, x, y + h, r);
-    ctx.arcTo(x, y + h, x, y, r);
-    ctx.arcTo(x, y, x + w, y, r);
-    ctx.closePath(); ctx.fill();
-  }
+  function schedule() { cancelAnimationFrame(raf); raf = requestAnimationFrame(loop); }
 
   function loop(ts) {
-    if (state !== 'running') return;
-    if (!last) last = ts;
-    acc += ts - last; last = ts;
-    while (acc >= tick && state === 'running') { acc -= tick; step(); }
-    draw();
-    requestAnimationFrame(loop);
+    if (state === 'running') {
+      if (!last) last = ts;
+      const dt = Math.min(250, ts - last); last = ts;
+      acc += dt;
+      eat = Math.max(0, eat - dt / EAT_MS);
+      while (acc >= tick && state === 'running') { acc -= tick; step(); }
+      if (state === 'running') { draw(Math.min(1, acc / tick), ts); schedule(); return; }
+    }
+    if (state === 'over' && deathStart) {
+      const d = ts - deathStart;
+      if (d < DEATH_MS) {
+        flash = Math.floor(d / 80) % 2 === 0 ? .8 : 0;
+        draw(1, ts); schedule();
+      } else {
+        flash = 0; deathStart = 0; draw(1, ts);
+        showOverlay('Game Over', 'Score ' + score + (score >= best && score > 0 ? ' · New best!' : '') + ' · Tap to play again', true);
+      }
+    }
   }
 
   function start() {
     reset(); state = 'running'; overlay.hidden = true; pauseBtn.textContent = 'Pause';
-    last = 0; requestAnimationFrame(loop);
+    sfx.start(); last = 0; schedule();
   }
   function pause() {
     if (state !== 'running') return;
     state = 'paused'; pauseBtn.textContent = 'Resume';
-    showOverlay('Paused', 'Tap to resume');
+    draw(1, performance.now());
+    showOverlay('Paused', 'Tap to resume', false);
   }
   function resume() {
     if (state !== 'paused') return;
     state = 'running'; overlay.hidden = true; pauseBtn.textContent = 'Pause';
-    last = 0; requestAnimationFrame(loop);
+    last = 0; schedule();
   }
   function gameOver() {
     state = 'over'; pauseBtn.textContent = 'Pause';
-    showOverlay('Game Over', 'Score ' + score + (score >= best && score > 0 ? ' · New best!' : '') + ' · Tap to play again');
+    prev = null; eat = 0; queue = [];
+    recent.unshift(score); recent = recent.slice(0, 5); save('pinkSnakeRecent', recent);
+    sfx.die(); vib([60, 40, 90]);
+    deathStart = performance.now(); schedule();
   }
-  function showOverlay(t, l) { ovTitle.textContent = t; ovLine.textContent = l; overlay.hidden = false; }
+  function showOverlay(t, l, isOver) {
+    ovTitle.textContent = t; ovLine.textContent = l;
+    ovRecent.textContent = isOver && recent.length ? 'Recent: ' + recent.join(' · ') : '';
+    shareBtn.hidden = !isOver;
+    overlay.hidden = false;
+  }
 
-  // --- input: overlay tap
-  overlay.addEventListener('click', () => {
-    if (state === 'paused') resume(); else start();
+  // --- toast
+  let toastAction = null, toastT = 0;
+  function showToast(msg, action) {
+    toast.textContent = msg; toast.hidden = false; toastAction = action || null;
+    clearTimeout(toastT);
+    if (!action) toastT = setTimeout(() => { toast.hidden = true; }, 2500);
+  }
+  toast.addEventListener('click', () => { toast.hidden = true; if (toastAction) toastAction(); });
+
+  // --- share
+  shareBtn.addEventListener('click', async e => {
+    e.stopPropagation();
+    const text = 'I scored ' + score + ' in Pink Snake 🐍💕';
+    try {
+      if (navigator.share) await navigator.share({title: 'Pink Snake', text, url: location.href});
+      else { await navigator.clipboard.writeText(text + ' ' + location.href); showToast('Copied to clipboard'); }
+    } catch (err) {}
   });
-  pauseBtn.addEventListener('click', () => {
-    if (state === 'running') pause(); else if (state === 'paused') resume();
+
+  // --- settings UI
+  function renderSettings() {
+    diffSeg.querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.diff === settings.diff));
+    wallBtn.textContent = settings.wrap ? 'Walls off' : 'Walls on';
+    soundBtn.textContent = settings.muted ? '🔇' : '🔊';
+    soundBtn.setAttribute('aria-pressed', String(!settings.muted));
+  }
+  diffSeg.addEventListener('click', e => {
+    const b = e.target.closest('button[data-diff]'); if (!b) return;
+    settings.diff = b.dataset.diff; save('pinkSnakeSettings', settings); renderSettings(); sfx.tick();
+    if (state === 'running' || state === 'paused') showToast('Speed applies to the next game');
   });
+  wallBtn.addEventListener('click', () => {
+    settings.wrap = !settings.wrap; save('pinkSnakeSettings', settings); renderSettings(); sfx.tick();
+    showToast(settings.wrap ? 'Walls off: the snake wraps around' : 'Walls on: hitting a wall ends the game');
+  });
+  soundBtn.addEventListener('click', () => {
+    settings.muted = !settings.muted; save('pinkSnakeSettings', settings); renderSettings();
+    if (!settings.muted) sfx.tick();
+  });
+  renderSettings();
+
+  // --- input: overlay tap / pause
+  overlay.addEventListener('click', () => { if (state === 'paused') resume(); else start(); });
+  pauseBtn.addEventListener('click', () => { if (state === 'running') pause(); else if (state === 'paused') resume(); });
 
   // --- input: D-pad
   document.querySelectorAll('.pad button[data-dir]').forEach(b => {
-    const go = e => { e.preventDefault(); setDir(b.dataset.dir); };
-    b.addEventListener('pointerdown', go);
+    b.addEventListener('pointerdown', e => { e.preventDefault(); setDir(b.dataset.dir); });
   });
 
   // --- input: keyboard
@@ -273,13 +449,15 @@
     else if (e.key === ' ' || e.key === 'Escape') { e.preventDefault(); state === 'running' ? pause() : (state === 'paused' ? resume() : start()); }
   });
 
-  // --- input: swipe
+  // --- input: swipe anywhere (buttons excluded)
   let sx = 0, sy = 0, swiping = false;
   const TH = 20;
-  canvas.addEventListener('touchstart', e => {
+  document.addEventListener('touchstart', e => {
+    if (e.target.closest('button, .seg, #toast')) { swiping = false; return; }
     const t = e.changedTouches[0]; sx = t.clientX; sy = t.clientY; swiping = true;
   }, {passive: true});
-  canvas.addEventListener('touchmove', e => {
+  document.addEventListener('touchmove', e => {
+    if (state === 'running' && e.cancelable) e.preventDefault(); // no page scroll while playing
     if (!swiping) return;
     const t = e.changedTouches[0];
     const dx = t.clientX - sx, dy = t.clientY - sy;
@@ -287,15 +465,26 @@
     swiping = false;
     if (Math.abs(dx) > Math.abs(dy)) setDir(dx > 0 ? 'right' : 'left');
     else setDir(dy > 0 ? 'down' : 'up');
-  }, {passive: true});
-  canvas.addEventListener('touchend', () => { swiping = false; }, {passive: true});
+  }, {passive: false});
+  document.addEventListener('touchend', () => { swiping = false; }, {passive: true});
 
   document.addEventListener('visibilitychange', () => { if (document.hidden) pause(); });
   window.addEventListener('resize', resize);
+  const mq = window.matchMedia('(prefers-color-scheme: dark)');
+  const onScheme = () => { readColors(); draw(1, performance.now()); };
+  if (mq.addEventListener) mq.addEventListener('change', onScheme); else mq.addListener(onScheme);
   resize();
 
+  // --- service worker with update notice
   if ('serviceWorker' in navigator && location.protocol === 'https:') {
-    navigator.serviceWorker.register('./sw.js').then(() => console.log('SW registered')).catch(err => console.warn('SW failed', err));
+    let hadController = !!navigator.serviceWorker.controller;
+    navigator.serviceWorker.register('./sw.js')
+      .then(() => console.log('SW registered'))
+      .catch(err => console.warn('SW failed', err));
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (hadController) showToast('New version ready · Tap to reload', () => location.reload());
+      hadController = true;
+    });
   }
 })();
 </script>
