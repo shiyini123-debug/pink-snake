@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pink Snake 规划书</title>
+<style>
+  :root { --pink: #FF69B4; --deep: #FF1493; --bg: #FFF7FA; --card: #fff; --text: #3a1a2a; --muted: #8B004B; --line: #FFD6E7; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font-family: -apple-system, "PingFang SC", "Segoe UI", "Microsoft YaHei", sans-serif; line-height: 1.7; }
+  main { max-width: 820px; margin: 0 auto; padding: 32px 20px 60px; }
+  h1 { color: var(--deep); font-size: 30px; margin: 0 0 4px; }
+  .sub { color: var(--muted); margin: 0 0 28px; font-size: 15px; }
+  h2 { color: var(--deep); font-size: 20px; margin: 36px 0 12px; padding-left: 12px; border-left: 4px solid var(--pink); }
+  p { margin: 8px 0; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 16px 18px; margin: 12px 0; }
+  .tablewrap { overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; font-size: 14.5px; background: var(--card); }
+  th, td { border: 1px solid var(--line); padding: 9px 12px; text-align: left; vertical-align: top; }
+  th { background: #FFE4EF; color: var(--muted); white-space: nowrap; }
+  td:first-child { white-space: nowrap; }
+  .tag { display: inline-block; background: #FFE4EF; color: var(--muted); border-radius: 999px; padding: 1px 10px; font-size: 12.5px; margin-left: 6px; }
+  .warn { background: #FFF3E0; border-color: #FFD59E; }
+  .ok { background: #F1FBF4; border-color: #BFE8CB; }
+  code { background: #FFE4EF; padding: 1px 6px; border-radius: 6px; font-size: 13.5px; }
+  ol, ul { padding-left: 22px; } li { margin: 4px 0; }
+  .en { color: var(--muted); font-size: 0.92em; }
+  footer { margin-top: 40px; font-size: 13px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 12px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>🐍 Pink Snake 规划书</h1>
+  <p class="sub">粉红色贪吃蛇手机小游戏 · 决策：A 路 (PWA) · 2026-09-12</p>
+
+  <h2>1. 目标</h2>
+  <div class="card">
+    <p>在手机上有一个粉红色的贪吃蛇游戏，图标放在主屏幕，点开就玩，费用为零。不追求上架应用商店，但保留日后升级的路径。</p>
+  </div>
+
+  <h2>2. 两条路径的对比</h2>
+  <div class="tablewrap"><table>
+    <tr><th></th><th>A 路：PWA <span class="en">Progressive Web App，渐进式网页应用</span></th><th>B 路：上架应用商店</th></tr>
+    <tr><td>用户体验</td><td>浏览器打开网址，"添加到主屏幕"后像 app 一样全屏运行</td><td>从 App Store / Google Play 下载安装</td></tr>
+    <tr><td>费用</td><td>0</td><td>第一年约 125 美元起（详见第 5 节）</td></tr>
+    <tr><td>周期</td><td>半天</td><td>1 到 2 周（含审核）</td></tr>
+    <tr><td>技术栈</td><td>一个 HTML 文件 + Canvas + Service Worker</td><td>Expo <span class="en">基于 React Native 的跨平台框架</span> + EAS 云构建</td></tr>
+    <tr><td>局限</td><td>不在商店里；iPhone 上没有推送通知，部分离线能力受限</td><td>需要开发者账号、审核、Windows 上不能本地编译 iOS</td></tr>
+    <tr><td>结论</td><td><b>先做</b>。游戏逻辑可直接复用到 B 路</td><td>玩得满意、想分享给别人时再升级</td></tr>
+  </table></div>
+
+  <h2>3. A 路流程与工具</h2>
+  <div class="tablewrap"><table>
+    <tr><th>#</th><th>步骤</th><th>工具</th><th>费用</th></tr>
+    <tr><td>1</td><td>游戏本体：<code>index.html</code>，Canvas 2D 画 20×20 网格，粉色配色，手指滑动 + 屏幕方向键，本地保存最高分 <span class="en">localStorage</span></td><td>Claude Code</td><td>已有订阅</td></tr>
+    <tr><td>2</td><td>PWA 配置：<code>manifest.json</code> <span class="en">应用清单：名字、图标、全屏模式</span> + <code>sw.js</code> <span class="en">Service Worker：离线缓存</span></td><td>Claude Code</td><td>0</td></tr>
+    <tr><td>3</td><td>图标：192 px 与 512 px PNG，由 Python Pillow 按游戏画面生成</td><td>Python + Pillow</td><td>0</td></tr>
+    <tr><td>4</td><td>发布：新建公开仓库 <code>pink-snake</code>，开启 GitHub Pages</td><td>git + GitHub CLI (gh)</td><td>0</td></tr>
+    <tr><td>5</td><td>手机打开网址，添加到主屏幕（见第 6 节）</td><td>Safari / Chrome</td><td>0</td></tr>
+  </table></div>
+  <div class="card">
+    <p><b>项目文件夹：</b><code>06 AI_Projects\1.0 claude-test\22 pink-snake\</code></p>
+    <p><b>发布网址：</b><code>https://shiyini123-debug.github.io/pink-snake/</code></p>
+    <p><b>仓库内容：</b>只有游戏与本规划书，不含任何公司信息。</p>
+  </div>
+
+  <h2>4. B 路流程（日后升级用）</h2>
+  <div class="tablewrap"><table>
+    <tr><th>#</th><th>步骤</th><th>工具</th></tr>
+    <tr><td>1</td><td>用 Expo 封装游戏，一套代码出 iOS + Android</td><td>Expo (React Native)</td></tr>
+    <tr><td>2</td><td>手机扫码实时预览，Wi-Fi 连电脑</td><td>Expo Go app</td></tr>
+    <tr><td>3</td><td>云端编译安装包（Windows 上编 iOS 的唯一途径）</td><td>EAS Build</td></tr>
+    <tr><td>4</td><td>注册开发者账号</td><td>Apple Developer Program / Google Play Console</td></tr>
+    <tr><td>5</td><td>内测</td><td>TestFlight / Play 内部测试</td></tr>
+    <tr><td>6</td><td>提交审核、上架</td><td>App Store Connect / Play Console</td></tr>
+  </table></div>
+
+  <h2>5. 费用表 <span class="tag">未核实，以官网为准</span></h2>
+  <div class="tablewrap"><table>
+    <tr><th>项目</th><th>A 路</th><th>B 路</th><th>备注</th></tr>
+    <tr><td>Claude Code</td><td>已有</td><td>已有</td><td></td></tr>
+    <tr><td>GitHub Pages 托管</td><td>0</td><td>—</td><td>公开仓库免费</td></tr>
+    <tr><td>Apple Developer Program</td><td>—</td><td>约 99 美元 / 年</td><td>iOS 上架必需</td></tr>
+    <tr><td>Google Play Console</td><td>—</td><td>约 25 美元，一次性</td><td>Android 上架必需</td></tr>
+    <tr><td>EAS Build</td><td>—</td><td>免费层有月度构建次数限制，付费约 19 美元 / 月</td><td>只在需要 iOS 包时用</td></tr>
+    <tr><td><b>合计</b></td><td><b>0</b></td><td><b>第一年约 125 美元起</b></td><td>只做 Android 则 25 美元</td></tr>
+  </table></div>
+  <div class="card warn"><p>价格来自记忆，本次未在官网核实。注册前请以 developer.apple.com、play.google.com/console、expo.dev/pricing 页面为准。</p></div>
+
+  <h2>6. 手机上"添加到主屏幕"</h2>
+  <div class="card">
+    <p><b>iPhone (Safari):</b> Open the URL → tap the <b>Share</b> button (square with arrow) → <b>Add to Home Screen</b> → <b>Add</b>.</p>
+    <p><b>Android (Chrome):</b> Open the URL → tap the <b>⋮</b> menu → <b>Add to Home screen</b> (or <b>Install app</b>) → <b>Add</b>.</p>
+    <p>之后从主屏幕图标打开即为全屏无地址栏；第一次打开后离线也能玩。</p>
+  </div>
+
+  <h2>7. Windows 用户的两个注意点</h2>
+  <div class="card">
+    <ul>
+      <li><b>iOS 原生开发需要 Mac。</b> Xcode 只能在 macOS 运行，所以 B 路必须走 Expo + EAS 云构建，让 Expo 的服务器代为编译 iOS 包。</li>
+      <li><b>Android 可在 Windows 本地完成全部流程。</b> 只要 Android，B 路成本降到 25 美元一次性。</li>
+    </ul>
+  </div>
+
+  <h2>8. 不做的事</h2>
+  <div class="card">
+    <p>本轮不做：音效、关卡、多人、皮肤切换、应用商店素材。以上都属于 B 路或后续迭代。</p>
+  </div>
+
+  <footer>Pink Snake · 规划书 · 由 Claude Code 生成 · 源文件与游戏同在 <code>22 pink-snake</code> 文件夹</footer>
+</main>
+</body>
+</html>
