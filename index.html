@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
@@ -79,22 +79,22 @@
 <body>
 <header>
   <div class="title">🐍 Pink Snake</div>
-  <div class="scores">分数 <b id="score">0</b><span>最高 <b id="best">0</b></span></div>
+  <div class="scores">Score <b id="score">0</b><span>Best <b id="best">0</b></span></div>
 </header>
 
 <div class="stage">
   <canvas id="game"></canvas>
   <div class="overlay" id="overlay">
     <h1 id="ovTitle">Pink Snake</h1>
-    <p id="ovLine">点击开始</p>
-    <p class="hint">滑动屏幕或用下方方向键控制</p>
+    <p id="ovLine">Tap to start</p>
+    <p class="hint">Swipe or use the arrow pad below</p>
   </div>
 </div>
 
 <div class="pad">
-  <span></span><button data-dir="up" aria-label="上">▲</button><span></span>
-  <button data-dir="left" aria-label="左">◀</button><button class="mid" id="pauseBtn">暂停</button><button data-dir="right" aria-label="右">▶</button>
-  <span></span><button data-dir="down" aria-label="下">▼</button><span></span>
+  <span></span><button data-dir="up" aria-label="Up">▲</button><span></span>
+  <button data-dir="left" aria-label="Left">◀</button><button class="mid" id="pauseBtn">Pause</button><button data-dir="right" aria-label="Right">▶</button>
+  <span></span><button data-dir="down" aria-label="Down">▼</button><span></span>
 </div>
 <footer>swipe / arrow keys / WASD</footer>
 
@@ -232,22 +232,22 @@
   }
 
   function start() {
-    reset(); state = 'running'; overlay.hidden = true; pauseBtn.textContent = '暂停';
+    reset(); state = 'running'; overlay.hidden = true; pauseBtn.textContent = 'Pause';
     last = 0; requestAnimationFrame(loop);
   }
   function pause() {
     if (state !== 'running') return;
-    state = 'paused'; pauseBtn.textContent = '继续';
-    showOverlay('暂停', '点击继续');
+    state = 'paused'; pauseBtn.textContent = 'Resume';
+    showOverlay('Paused', 'Tap to resume');
   }
   function resume() {
     if (state !== 'paused') return;
-    state = 'running'; overlay.hidden = true; pauseBtn.textContent = '暂停';
+    state = 'running'; overlay.hidden = true; pauseBtn.textContent = 'Pause';
     last = 0; requestAnimationFrame(loop);
   }
   function gameOver() {
-    state = 'over'; pauseBtn.textContent = '暂停';
-    showOverlay('游戏结束', '分数 ' + score + (score >= best && score > 0 ? ' · 新纪录!' : '') + '，点击重来');
+    state = 'over'; pauseBtn.textContent = 'Pause';
+    showOverlay('Game Over', 'Score ' + score + (score >= best && score > 0 ? ' · New best!' : '') + ' · Tap to play again');
   }
   function showOverlay(t, l) { ovTitle.textContent = t; ovLine.textContent = l; overlay.hidden = false; }
 
